@@ -475,6 +475,7 @@ namespace SlackAPI
             string botName = null,
             string parse = null,
             bool linkNames = false,
+            IBlock[] blocks = null,
             Attachment[] attachments = null,
             bool as_user = false)
         {
@@ -493,10 +494,22 @@ namespace SlackAPI
             if (linkNames)
                 parameters.Add(new Tuple<string, string>("link_names", "1"));
 
-            if (attachments != null && attachments.Length > 0)
-                parameters.Add(new Tuple<string, string>("attachments", JsonConvert.SerializeObject(attachments)));
+            if (blocks != null && blocks.Length > 0)
+               parameters.Add(new Tuple<string, string>("blocks", 
+                  JsonConvert.SerializeObject(blocks, new JsonSerializerSettings()
+                  {
+                     NullValueHandling = NullValueHandling.Ignore
+                  })));
 
-            parameters.Add(new Tuple<string, string>("as_user", as_user.ToString()));
+            if (attachments != null && attachments.Length > 0)
+                parameters.Add(new Tuple<string, string>("attachments", 
+                   JsonConvert.SerializeObject(attachments, new JsonSerializerSettings()
+                   {
+                      NullValueHandling = NullValueHandling.Ignore
+                   })));
+
+
+         parameters.Add(new Tuple<string, string>("as_user", as_user.ToString()));
 
             APIRequestWithToken(callback, parameters.ToArray());
         }
@@ -514,6 +527,7 @@ namespace SlackAPI
             string botName = null,
             string parse = null,
             bool linkNames = false,
+            IBlock[] blocks = null,
             Attachment[] attachments = null,
             bool unfurl_links = false,
             string icon_url = null,
@@ -535,15 +549,23 @@ namespace SlackAPI
             if (linkNames)
                 parameters.Add(new Tuple<string, string>("link_names", "1"));
 
-            if (attachments != null && attachments.Length > 0)
-                parameters.Add(new Tuple<string, string>("attachments",
-                    JsonConvert.SerializeObject(attachments, Formatting.None,
-                            new JsonSerializerSettings // Shouldn't include a not set property
-                            {
-                                NullValueHandling = NullValueHandling.Ignore
-                            })));
+            if (blocks != null && blocks.Length > 0)
+               parameters.Add(new Tuple<string, string>("blocks",
+                  JsonConvert.SerializeObject(blocks, Formatting.None,
+                     new JsonSerializerSettings // Shouldn't include a not set property
+                     {
+                        NullValueHandling = NullValueHandling.Ignore
+                     })));
 
-            if (unfurl_links)
+            if (attachments != null && attachments.Length > 0)
+                   parameters.Add(new Tuple<string, string>("attachments",
+                       JsonConvert.SerializeObject(attachments, Formatting.None,
+                               new JsonSerializerSettings // Shouldn't include a not set property
+                               {
+                                   NullValueHandling = NullValueHandling.Ignore
+                               })));
+
+         if (unfurl_links)
                 parameters.Add(new Tuple<string, string>("unfurl_links", "1"));
 
             if (!string.IsNullOrEmpty(icon_url))
@@ -568,6 +590,7 @@ namespace SlackAPI
             string targetuser,
             string parse = null,
             bool linkNames = false,
+            Block[] blocks = null,
             Attachment[] attachments = null,
             bool as_user = false,
 	    string thread_ts = null)
@@ -584,6 +607,14 @@ namespace SlackAPI
             if (linkNames)
                 parameters.Add(new Tuple<string, string>("link_names", "1"));
 
+            if (blocks != null && blocks.Length > 0)
+                parameters.Add(new Tuple<string, string>("blocks",
+                    JsonConvert.SerializeObject(blocks, Formatting.None,
+                            new JsonSerializerSettings // Shouldn't include a not set property
+                            {
+                                NullValueHandling = NullValueHandling.Ignore
+                            })));
+
             if (attachments != null && attachments.Length > 0)
                 parameters.Add(new Tuple<string, string>("attachments",
                     JsonConvert.SerializeObject(attachments, Formatting.None,
@@ -596,7 +627,24 @@ namespace SlackAPI
 
             APIRequestWithToken(callback, parameters.ToArray());
         }
+        public void DialogOpen(
+           Action<DialogOpenResponse> callback,
+           string triggerId,
+           Dialog dialog)
+        {
+           List<Tuple<string, string>> parameters = new List<Tuple<string, string>>();
 
+           parameters.Add(new Tuple<string, string>("trigger_id", triggerId));
+
+           parameters.Add(new Tuple<string, string>("dialog",
+              JsonConvert.SerializeObject(dialog,
+                 new JsonSerializerSettings
+                 {
+                    NullValueHandling = NullValueHandling.Ignore
+                 })));
+
+           APIRequestWithToken(callback, parameters.ToArray());
+        }
 
         public void AddReaction(
             Action<ReactionAddedResponse> callback,
